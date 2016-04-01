@@ -186,6 +186,10 @@ L.Handler.PolylineSnap = L.Edit.Poly.extend({
         else {
             this._snapper.watchMarker(marker);
         }
+
+        // force the control point on the top
+        marker.setZIndexOffset(99999);
+
         return marker;
     }
 });
