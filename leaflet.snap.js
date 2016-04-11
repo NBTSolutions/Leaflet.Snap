@@ -125,8 +125,38 @@ L.Handler.MarkerSnap = L.Handler.extend({
         this._updateSnap(marker, closest.layer, closest.latlng);
     },
 
+
     _findClosestLayerSnap: function (map, layers, latlng, tolerance, withVertices) {
-        return L.GeometryUtil.closestLayerSnap(map, layers, latlng, tolerance, withVertices);
+
+        /*
+         * In this version the point layer will have higher priority for snapping.
+         */
+
+        var layersNearby = L.GeometryUtil.layersWithin(map, layers, latlng, tolerance);
+        var closestLayer;
+
+        if (layersNearby.length == 0) { return null; }
+
+        for(var i = 0, n = layersNearby.length; i < n; i++) {
+          var layer = layersNearby[i].layer;
+          if (typeof layer.getLatLng == 'function') {
+            closestLayer = layersNearby[i];
+            break;
+          }
+        }
+
+        if (!closestLayer) { closestLayer = layersNearby[0] };
+
+        // If snapped layer is linear, try to snap on vertices (extremities and middle points)
+        if (withVertices && typeof closestLayer.layer.getLatLngs == 'function') {
+            var closest = L.GeometryUtil.closest(map, closestLayer.layer, closestLayer.latlng, true);
+            if (closest.distance < tolerance) {
+                closestLayer.latlng = closest;
+                closestLayer.distance = L.GeometryUtil.distance(map, closest, latlng);
+            }
+        }
+
+        return closestLayer;
     },
 
     _updateSnap: function (marker, layer, latlng) {
