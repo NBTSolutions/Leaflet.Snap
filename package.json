@@ -19,9 +19,9 @@
     },
     "dependencies": {
         "leaflet": "*",
-        "leaflet-geometryutil": "*"
+        "leaflet-geometryutil": "git://github.com/NBTSolutions/Leaflet.GeometryUtil.git#master"
     },
     "optionalDependencies": {
-        "leaflet-draw": "*"
+        "leaflet-draw": "git://github.com/NBTSolutions/Leaflet.draw.git#0.2.4-master"
     }
 }
