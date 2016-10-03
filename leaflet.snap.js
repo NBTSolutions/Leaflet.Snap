@@ -70,9 +70,14 @@ L.Handler.MarkerSnap = L.Handler.extend({
     },
 
     _snapMarker: function(e) {
-        var marker = e.target,
-            latlng = marker.getLatLng(),
-            snaplist = [];
+        var marker = e.target;
+
+        if (marker.editing.enabled() && !marker.edited) {
+            return;
+        }
+
+        var latlng = marker.getLatLng();
+        var snaplist = [];
 
         function isDifferentLayer(layer) {
             if (layer.getLatLng) {
