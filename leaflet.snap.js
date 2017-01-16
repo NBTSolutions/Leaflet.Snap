@@ -52,10 +52,11 @@ L.Handler.MarkerSnap = L.Handler.extend({
 
         // Convert snap distance in pixels into buffer in degres, for searching around mouse
         // It changes at each zoom change.
-        map.on('zoomend', function() {
-            this._buffer = pixelSize[map.getZoom()] * this.options.snapDistance / 111111;
-        }, this);
+        function computeBuffer() {
+          this._buffer = pixelSize[map.getZoom()] * this.options.snapDistance / 111111;
+        }
 
+        map.on('zoomend', computeBuffer, this);
         map.whenReady(computeBuffer, this);
         computeBuffer.call(this);
     },
