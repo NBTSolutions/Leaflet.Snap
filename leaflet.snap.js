@@ -95,29 +95,28 @@ L.Handler.MarkerSnap = L.Handler.extend({
         }
 
         function processGuide(guide) {
-            if ((guide._layers !== undefined) &&
-                (typeof guide.searchBuffer !== 'function')) {
+            if (guide._layers !== undefined) {
                 // Guide is a layer group and has no L.LayerIndexMixin (from Leaflet.LayerIndex)
                 for (var id in guide._layers) {
                     processGuide(guide._layers[id]);
                 }
-            }
-            else if (typeof guide.searchBuffer === 'function') {
-                // Search snaplist around mouse
-                var nearlayers = guide.searchBuffer(latlng, this._buffer);
-                snaplist = snaplist.concat(nearlayers.filter(function(layer) {
-                    return isDifferentLayer(layer);
-                }));
             }
             // Make sure the marker doesn't snap to itself or the associated polyline layer
             else if (isDifferentLayer(guide)) {
                 snaplist.push(guide);
             }
         }
-
-        for (var i=0, n = this._guides.length; i < n; i++) {
-            var guide = this._guides[i];
-            processGuide.call(this, guide);
+        
+        if (typeof marker._map.searchBuffer === 'function') {
+          snaplist = marker._map.searchBuffer(latlng, this._buffer)
+                            .filter(function(layer) {
+                                return isDifferentLayer(layer);
+                            });
+        } else {
+          for (var i=0, n = this._guides.length; i < n; i++) {
+              var guide = this._guides[i];
+              processGuide(guide);
+          }
         }
 
         var closest = this._findClosestLayerSnap(this._map,
