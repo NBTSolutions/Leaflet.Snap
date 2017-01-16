@@ -1,5 +1,28 @@
 (function () {
 
+var pixelSize = [
+  156412,
+  78206,
+  39103,
+  19551,
+  9776,
+  4888,
+  2444,
+  1222,
+  611,
+  305,
+  153,
+  76,
+  38,
+  19,
+  9,
+  5,
+  2,
+  1,
+  0.6,
+  0.3
+];
+
 L.Handler.MarkerSnap = L.Handler.extend({
     options: {
         snapDistance: 15, // in pixels
@@ -29,11 +52,10 @@ L.Handler.MarkerSnap = L.Handler.extend({
 
         // Convert snap distance in pixels into buffer in degres, for searching around mouse
         // It changes at each zoom change.
-        function computeBuffer() {
-            this._buffer = map.layerPointToLatLng(new L.Point(0,0)).lat -
-                           map.layerPointToLatLng(new L.Point(this.options.snapDistance, 0)).lat;
-        }
-        map.on('zoomend', computeBuffer, this);
+        map.on('zoomend', function() {
+            this._buffer = pixelSize[map.getZoom()] * this.options.snapDistance / 111111
+        }, this);
+
         map.whenReady(computeBuffer, this);
         computeBuffer.call(this);
     },
