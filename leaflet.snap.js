@@ -62,7 +62,7 @@ L.Snap.processGuide = function (latlng, marker, guide, snaplist, buffer) {
     else if (typeof guide.searchBuffer === 'function') {
         var nearlayers = guide.searchBuffer(latlng, buffer);
         snaplist = snaplist.concat(nearlayers.filter(function(layer) {
-            return L.Snap.isDifferentLayer(layer);
+            return L.Snap.isDifferentLayer(marker, layer);
         }));
     }
 
@@ -72,7 +72,7 @@ L.Snap.processGuide = function (latlng, marker, guide, snaplist, buffer) {
     }
 };
 
-L.Snap.findLayerSnap = function (map, layers, latlng, tolerance, withVertices) {
+L.Snap.findClosestLayerSnap = function (map, layers, latlng, tolerance, withVertices) {
 
     /*
      * In this version the point layer will have higher priority for snapping.
@@ -166,15 +166,24 @@ L.Snap.snapMarker = function (e, guides, map, options, buffer) {
     }
 
     var snaplist = [];
-    for (var i=0, n = guides.length; i < n; i++) {
-        var guide = guides[i];
 
-        // don't snap to vertices of a poly object for poly move
-        if (marker.hasOwnProperty('_owner') && (guide._leaflet_id == marker._owner)) {
-            continue;
+    // use the global index if the user sets so
+    if (options.snapMapIndex && typeof map.searchBuffer === 'function') {
+        snaplist = map.searchBuffer(latlng, buffer)
+            .filter(function(layer) {
+                return L.Snap.isDifferentLayer(marker, layer);
+            });
+    } else {
+        for (var i=0, n = guides.length; i < n; i++) {
+            var guide = guides[i];
+
+            // don't snap to vertices of a poly object for poly move
+            if (marker.hasOwnProperty('_owner') && (guide._leaflet_id == marker._owner)) {
+                continue;
+            }
+
+            L.Snap.processGuide(latlng, marker, guide, snaplist, buffer);
         }
-
-        L.Snap.processGuide(latlng, marker, guide, snaplist, buffer);
     }
 
     if (snaplist.length === 0) {
@@ -516,7 +525,7 @@ L.Draw.Feature.SnapMixin = {
     },
 
     _snap_on_enabled: function () {
-        if (!this.options.guideLayers) {
+        if (!this.options.guideLayers && !this.options.snapMapIndex) {
             return;
         }
 
@@ -536,10 +545,15 @@ L.Draw.Feature.SnapMixin = {
             if (this.options.snapVertices) {
                 this._snapper.options.snapVertices = this.options.snapVertices;
             }
+            if (this.options.snapMapIndex) {
+                this._snapper.options.snapMapIndex = this.options.snapMapIndex;
+            }
         }
 
-        for (var i=0, n=this.options.guideLayers.length; i<n; i++) {
-            this._snapper.addGuideLayer(this.options.guideLayers[i]);
+        if (this.options.guideLayers) {
+            for (var i=0, n=this.options.guideLayers.length; i<n; i++) {
+                this._snapper.addGuideLayer(this.options.guideLayers[i]);
+            }
         }
 
         var marker = this._mouseMarker;
@@ -557,10 +571,10 @@ L.Draw.Feature.SnapMixin = {
             marker.setOpacity(0);
         }, this);
 
-        marker.on('click', this._snap_on_click, this);
-
-        this._map.on('mousedown', this._snap_on_click, this);
-        this._map.on('touchstart', this._snap_on_click, this);
+        // we don't need touch event
+        // marker.on('click', this._snap_on_click, this);
+        // this._map.on('mousedown', this._snap_on_click, this);
+        // this._map.on('touchstart', this._snap_on_click, this);
     },
 
     _snap_on_click: function (e) {
@@ -632,7 +646,7 @@ L.Draw.Feature.SnapMixin = {
 
     _snap_on_disabled: function () {
         delete this._snapper;
-    },
+    }
 };
 
 L.Draw.Feature.include(L.Draw.Feature.SnapMixin);

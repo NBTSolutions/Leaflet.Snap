@@ -10,7 +10,8 @@
   <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
     <script src="https://rawgit.com/NBTSolutions/Leaflet.draw/vetro-leaflet-1.x/dist/leaflet.draw-src.js"></script>
     <script src="https://rawgit.com/NBTSolutions/Leaflet.GeometryUtil/vetro-leaflet-1.x/src/leaflet.geometryutil.js"></script>
-
+    <script src="https://unpkg.com/rbush@2.0.1/rbush.min.js"></script>
+    <script src="https://rawgit.com/NBTSolutions/Leaflet.LayerIndex/vetro-leaflet-1.x/leaflet.layerindex.js"></script>
     <script src="../leaflet.snap.js"></script>
     <style>
         #map {
@@ -69,6 +70,8 @@
     <div id="map"></div>
 
     <script type="text/javascript">
+        L.Map.include(L.LayerIndexMixin);
+
         var osm = L.tileLayer('//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: 'Map data &copy; 2013 OpenStreetMap contributors',
         });
@@ -112,8 +115,9 @@
         }).addTo(map);
 
         var marker = L.marker([48.488, 1.395]).addTo(map);
-        marker.snapediting = new L.Handler.MarkerSnap(map, marker);
-        marker.snapediting.addGuideLayer(guides);
+        marker.snapediting = new L.Handler.MarkerSnap(map, marker, {
+          snapMapIndex: true
+        });
         marker.snapediting.enable();
 
         var road = L.polyline([
@@ -126,11 +130,10 @@
             opacity: 1.0
         }).addTo(map);
 
-        road.snapediting = new L.Handler.PolylineSnap(map, road);
-        road.snapediting.addGuideLayer(guides);
+        road.snapediting = new L.Handler.PolylineSnap(map, road, {
+          snapMapIndex: true
+        });
         road.snapediting.enable();
-
-        marker.snapediting.addGuideLayer(road);
 
         for (var m in road.snapediting._verticesHandlers[0]._markerGroup._layers) {
             road.snapediting._verticesHandlers[0]._markerGroup._layers[m].fire('move');
@@ -148,40 +151,38 @@
             })
             .addTo(map);
 
-        marker.snapediting.addGuideLayer(road2);
-        road.snapediting.addGuideLayer(road2);
-
         var snapEdit = new L.EditToolbar.SnapEdit(map, {
             featureGroup: L.featureGroup([road2]),
             snapOptions: {
-                guideLayers: [guides]
+                snapMapIndex: true
             }
         });
 
         // Enable edit from the EditToolBar idem
         // snapEdit.enable();
 
-        var guideLayers = [guides, road, road2];
-
         map.drawControl.setDrawingOptions({
             polyline: {
-                guideLayers: guideLayers
+                snapMapIndex: true
             },
             polygon: {
-                guideLayers: guideLayers
             },
             marker: {
-                guideLayers: guideLayers,
-                snapVertices: false,
+                snapMapIndex: true,
+                snapVertices: false
             },
             rectangle: false,
             circle: false
         });
 
+        map.indexLayer(guides);
+        map.indexLayer(road);
+        map.indexLayer(road2);
+
         map.on('draw:created', function(e) {
             var layer = e.layer;
             map.addLayer(layer);
-            guideLayers.push(layer);
+            map.indexLayer(layer);
         });
     </script>
 </body>

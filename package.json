@@ -19,11 +19,11 @@
     },
     "license": "MIT",
     "dependencies": {
-        "leaflet": "^0.7.7",
+        "leaflet": "^1.2.0",
         "leaflet-geometryutil": "git://github.com/NBTSolutions/Leaflet.GeometryUtil.git#vetro-leaflet-1.x"
     },
     "optionalDependencies": {
-        "leaflet-draw": "^0.3.2"
+        "leaflet-draw": "^0.4.12"
     },
     "devDependencies": {
         "chai": "^3.5.0",
