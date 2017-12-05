@@ -595,7 +595,10 @@ L.Draw.Feature.SnapMixin = {
     },
 
     _snap_on_disabled: function () {
+      if (this._mouseMarker) {
+        this._snapper.unwatchMarker(this._mouseMarker);
         delete this._snapper;
+      }
     }
 };
 
