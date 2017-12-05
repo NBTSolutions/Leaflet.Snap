@@ -574,9 +574,11 @@ L.Draw.Feature.SnapMixin = {
             marker.setOpacity(0);
         }, this);
 
-        // we don't need touch event
+        // _snap_on_click is no longer unnecessary as long as the drawHandler is
+        // prevented from firing duplicate events for touchstart and mousedown
+        //
         // marker.on('click', this._snap_on_click, this);
-        this._map.on('mousedown', this._snap_on_click, this);
+        // this._map.on('mousedown', this._snap_on_click, this);
         // this._map.on('touchstart', this._snap_on_click, this);
     },
     // This function will force update a polyline/polygon so the location of the
