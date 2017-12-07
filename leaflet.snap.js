@@ -571,7 +571,7 @@ L.Draw.Feature.SnapMixin = {
     var markerCount = (this._markers || []).length,
         lastMarker = markerCount ? this._markers[markerCount - 1] : null;
     if (lastMarker && this._snapLatLng) {
-      var newCoords = [...this._poly._latlngs];
+      var newCoords = [].concat(this._poly._latlngs);
       newCoords[markerCount - 1] = this._snapLatLng;
       this._poly.setLatLngs(newCoords);
       lastMarker.setLatLng(this._snapLatLng);
